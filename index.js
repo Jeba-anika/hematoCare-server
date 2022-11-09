@@ -1,4 +1,4 @@
-const express =require('express')
+const express = require('express')
 const cors = require('cors')
 const app = express();
 require('dotenv').config()
@@ -15,70 +15,72 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.7tamy9s.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-function VerifyJWT(req, res, next){
+function VerifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
-    if(!authHeader){
-        res.status(401).send({message: 'Unauthorized Access'})
+    if (!authHeader) {
+        res.status(401).send({ message: 'Unauthorized Access' })
     }
     const token = authHeader.split(' ')[1];
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded){
-        if(err){
-            res.status(403).send({message: 'Unauthorized Access'})
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            res.status(403).send({ message: 'Unauthorized Access' })
         }
-        req.decoded =decoded
+        req.decoded = decoded
         next()
     })
 }
 
-async function run(){
-    try{
-        const servicesCollection = client.db('hematoCare').collection('services') 
+async function run() {
+    try {
+        const servicesCollection = client.db('hematoCare').collection('services')
         const reviewCollection = client.db('hematoCare').collection('reviews')
 
-        app.post('/jwt', (req, res)=>{
+        app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '1d'
             })
-            res.send({token})
+            res.send({ token })
         })
 
-        app.get('/home', async(req, res)=>{
+        app.get('/home', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query)
-            const services = await cursor.limit(3).toArray();
+            const cursor = servicesCollection.find(query).sort({_id: -1})
+            const services =  await cursor.limit(3).toArray();
             res.send(services)
         })
 
-        app.get('/services', async(req, res)=>{
+        app.get('/services', async (req, res) => {
             const query = {};
-            const cursor = servicesCollection.find(query);
+            const cursor = servicesCollection.find(query).sort({_id: -1});
             const services = await cursor.toArray();
             res.send(services)
         })
 
-        app.get('/services/:id', async(req, res)=>{
+        app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id)}
+            const query = { _id: ObjectId(id) }
             const service = await servicesCollection.findOne(query);
             res.send(service)
         })
 
-        app.get('/reviews/:id', async(req, res)=>{
+        app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { serviceId: id}
-            const cursor =  reviewCollection.find(query);
+            const query = { serviceId: id }
+            const cursor = reviewCollection.find(query);
             const review = await cursor.toArray();
             res.send(review)
         })
 
-        app.post('/reviews', async(req, res)=>{
-            const review = req.body;
+        app.post('/reviews', async (req, res) => {
+            const rev = req.body;
+            const now = new ISODate()
+            const review = {rev, now}
             const result = await reviewCollection.insertOne(review)
             res.send(result)
         })
 
-    }finally{
+    } finally {
 
     }
 }
@@ -87,10 +89,10 @@ run().catch(err => console.log(err))
 
 
 
-app.get('/', (req, res)=>{
+app.get('/', (req, res) => {
     res.send('HematoCare server is running')
 })
 
-app.listen(port, ()=>{
+app.listen(port, () => {
     console.log('HematoCare server is running on port', port)
 })
