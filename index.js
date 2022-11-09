@@ -74,9 +74,9 @@ async function run() {
 
         app.post('/reviews', async (req, res) => {
             const rev = req.body;
-            const now = new ISODate()
-            const review = {rev, now}
-            const result = await reviewCollection.insertOne(review)
+            const now = new Date()
+            rev.now = now;
+            const result = await reviewCollection.insertOne(rev)
             res.send(result)
         })
 
