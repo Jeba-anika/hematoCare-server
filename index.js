@@ -67,10 +67,20 @@ async function run() {
         app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { serviceId: id }
-            const cursor = reviewCollection.find(query);
+            const cursor = reviewCollection.find(query).sort({now: -1});
             const review = await cursor.toArray();
             res.send(review)
         })
+
+        app.get('/userreviews/:userid', async (req, res) => {
+            const userid = req.params.userid;
+            const query = { uid: userid }
+            const cursor = reviewCollection.find(query).sort({now: -1});
+            const review = await cursor.toArray();
+            res.send(review)
+        })
+
+        
 
         app.post('/reviews', async (req, res) => {
             const rev = req.body;
@@ -79,6 +89,7 @@ async function run() {
             const result = await reviewCollection.insertOne(rev)
             res.send(result)
         })
+
 
     } finally {
 
