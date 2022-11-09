@@ -33,7 +33,7 @@ function VerifyJWT(req, res, next){
 async function run(){
     try{
         const servicesCollection = client.db('hematoCare').collection('services') 
-
+        const reviewCollection = client.db('hematoCare').collection('reviews')
 
         app.post('/jwt', (req, res)=>{
             const user = req.body;
@@ -63,6 +63,13 @@ async function run(){
             const service = await servicesCollection.findOne(query);
             res.send(service)
         })
+
+        app.post('/reviews', async(req, res)=>{
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review)
+            res.send(result)
+        })
+
     }finally{
 
     }
