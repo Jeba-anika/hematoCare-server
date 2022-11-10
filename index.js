@@ -64,6 +64,12 @@ async function run() {
             res.send(service)
         })
 
+        app.post('/services', VerifyJWT, async(req, res)=>{
+            const service = req.body;
+            const result = await servicesCollection.insertOne(service)
+            res.send(result)
+        })
+
         app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { serviceId: id }
@@ -112,7 +118,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('reviews/:id', VerifyJWT, async(req, res)=>{
+        app.delete('/review/:id', VerifyJWT, async(req, res)=>{
             const id = req.params.id;
             const email = req.query.email;
             const query = { serviceId: id, userEmail: email};
