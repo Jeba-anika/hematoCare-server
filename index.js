@@ -112,6 +112,14 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('reviews/:id', VerifyJWT, async(req, res)=>{
+            const id = req.params.id;
+            const email = req.query.email;
+            const query = { serviceId: id, userEmail: email};
+            const result = await reviewCollection.deleteOne(query);
+            res.send(result)
+        })
+
 
     } finally {
 
