@@ -72,7 +72,12 @@ async function run() {
             res.send(review)
         })
 
-        app.get('/userreviews/:userid', async (req, res) => {
+        app.get('/userreviews/:userid', VerifyJWT, async (req, res) => {
+            const decoded = req. decoded;
+            console.log(decoded)
+            if(decoded.email !== req.query.email){
+                res.status(403).send({message: 'Unauthorized access'})
+            }
             const userid = req.params.userid;
             const query = { uid: userid }
             const cursor = reviewCollection.find(query).sort({now: -1});
@@ -87,6 +92,23 @@ async function run() {
             const now = new Date()
             rev.now = now;
             const result = await reviewCollection.insertOne(rev)
+            res.send(result)
+        })
+
+        app.patch('/reviews/:id', VerifyJWT, async(req, res)=>{
+            const id = req.params.id;
+            const email = req.query.email;
+            const review = req.body.review;
+            const rating = req.body.rating;
+            const query = { serviceId: id, userEmail: email}
+            const updatedDoc = {
+                $set: {
+                    review : review,
+                    rating: rating
+                }
+            }
+
+            const result = await reviewCollection.updateOne(query, updatedDoc)
             res.send(result)
         })
 
